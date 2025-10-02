@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Osu! Like Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+        canvas {
+            display: block;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+        }
+        .popup {
+            position: absolute;
+            color: white;
+            font-size: 20px;
+            font-family: Arial, sans-serif;
+            transition: opacity 1s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class HitObject {
+            constructor(x, y, time, id) {
+                this.x = x;
+                this.y = y;
+                this.time = time;
+                this.radius = 50;
+                this.spawnTime = Date.now();
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.id = id;
+                this.clicked = false;
+            }
+            draw() {
+                if (this.clicked) return false; // Don't draw if already clicked
+
+                const elapsed = Date.now() - this.spawnTime;
+                let scale = elapsed / this.time;
+                let movingRadius = Math.max(0, (1 - scale) * 100);
+
+                if (movingRadius <= this.radius) {
+                    if (!this.clicked) {
+                        score -= 100;
+                        showPopup("-100", this.x, this.y);
+                        document.getElementById("score").textContent = "Score: " + score;
+                    }
+                    return false; // Remove expired circles
+                }
+
+                // Expanding circle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, movingRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                ctx.closePath();
+
+                // Static target circle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.closePath();
+                
+                // Number in center
+                ctx.fillStyle = "white";
+                ctx.font = "20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(this.id, this.x, this.y);
+                return true;
+            }
+        }
+
+        let hitObjects = [];
+        let score = 0;
+        let hitCount = 1;
+
+        function spawnHitObject() {
+            let x = Math.random() * canvas.width;
+            let y = Math.random() * canvas.height;
+            hitObjects.push(new HitObject(x, y, 2000, hitCount++));
+            setTimeout(spawnHitObject, 1000);
+        }
+
+        function showPopup(text, x, y) {
+            let popup = document.createElement("div");
+            popup.className = "popup";
+            popup.textContent = text;
+            popup.style.left = `${x}px`;
+            popup.style.top = `${y}px`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.style.opacity = 0, 500);
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        canvas.addEventListener("click", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            let clicked = false;
+
+            hitObjects = hitObjects.filter((obj) => {
+                if (obj.clicked) return true; // Ignore already clicked objects
+
+                let dist = Math.sqrt((mouseX - obj.x) ** 2 + (mouseY - obj.y) ** 2);
+                if (dist < obj.radius) {
+                    obj.clicked = true;
+                    score += 300;
+                    showPopup("+300", mouseX, mouseY);
+                    document.getElementById("score").textContent = "Score: " + score;
+                    return false;
+                }
+                return true;
+            });
+
+            if (!clicked) {
+                score -= 50;
+                showPopup("-50", mouseX, mouseY);
+                document.getElementById("score").textContent = "Score: " + score;
+            }
+        });
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hitObjects = hitObjects.filter(obj => obj.draw());
+            requestAnimationFrame(gameLoop);
+        }
+
+        spawnHitObject();
+        gameLoop();
+    </script>
+</body>
+</html>

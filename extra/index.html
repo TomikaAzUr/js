@@ -1,0 +1,27 @@
+<input type="text" id="nev" /> <button onclick="submit()">Hozzáadás</button>
+<h2>Kosár</h2>
+
+<ul id="kosartartalom"></ul>
+<script>
+  const szovegdoboz = document.getElementById("nev");
+  const kosartartalom = document.getElementById("kosartartalom");
+
+  const kosar = [];
+
+  if (localStorage.getItem("kosar") !== null) {
+    JSON.parse(localStorage.getItem("kosar")).forEach((elem) => {
+      kosar.push(elem);
+    });
+  }
+
+  kosar.forEach((elem) => {
+    kosartartalom.appendChild(document.createElement("li")).innerHTML = elem;
+  });
+
+  const submit = () => {
+    kosar.push = szovegdoboz.value;
+    localStorage.setItem("kosar", JSON.stringify(kosar));
+    kosartartalom.appendChild(document.createElement("li")).innerHTML =
+      szovegdoboz.value;
+  };
+</script>

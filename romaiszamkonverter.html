@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Római szám konverter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #33334e;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        text-align: center;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 90%;
+        max-width: 500px;
+      }
+      h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+        color: #4caf50;
+      }
+      label {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+        display: block;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 1em;
+        margin: 10px 0 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 1em;
+        color: #fff;
+        background-color: #4caf50;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      button:active {
+        background-color: #0a5e0e;
+      }
+      #result {
+        font-size: 1.2em;
+        margin-top: 20px;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Római szám konverter</h1>
+      <form id="converterForm">
+        <label for="inputNumber">Add meg az arab vagy római számot:</label>
+        <input type="text" id="inputNumber" placeholder="Pl. 14 vagy XIV" />
+        <button type="submit">Konvertálás</button>
+      </form>
+      <div id="result"></div>
+    </div>
+
+    <script>
+      document
+        .getElementById("converterForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Ha nincs ilyen akkor az enter frissíti a weboldalt ezért az eredmény nem lesz kiírva.
+          convert();
+        });
+
+      function convert() {
+        const input = document.getElementById("inputNumber").value.trim();
+        const resultDiv = document.getElementById("result");
+
+        if (!input) {
+          resultDiv.innerText = "Kérlek, adj meg egy értéket!";
+          return;
+        }
+
+        if (/^\d+$/.test(input)) { // 0-9 arab számok legyenek csak benne.
+          const number = parseInt(input, 10);
+          if (number < 1 || number > 3999) {
+            resultDiv.innerText =
+              "Az arab számnak 1 és 3999 között kell lennie!";
+          } else {
+            resultDiv.innerText = `Római szám: ${arabToRoman(number)}`;
+          }
+        } else if (/^[IVXLCDM]+$/i.test(input)) { // Szimbólumok amiket használnak a római számoknál.
+          try {
+            const number = romanToArab(input.toUpperCase());
+            resultDiv.innerText = `Arab szám: ${number}`;
+          } catch (e) {
+            resultDiv.innerText = e.message;
+          }
+        } else {
+          resultDiv.innerText =
+            "Érvénytelen formátum! Adj meg arab vagy római számot.";
+        }
+      }
+
+      function arabToRoman(num) {
+        const romanNumerals = [
+          ["M", 1000],
+          ["CM", 900],
+          ["D", 500],
+          ["CD", 400],
+          ["C", 100],
+          ["XC", 90],
+          ["L", 50],
+          ["XL", 40],
+          ["X", 10],
+          ["IX", 9],
+          ["V", 5],
+          ["IV", 4],
+          ["I", 1],
+        ];
+
+        let roman = "";
+        for (let [symbol, value] of romanNumerals) {
+          while (num >= value) {
+            roman += symbol;
+            num -= value;
+          }
+        }
+        return roman;
+      }
+
+      function romanToArab(roman) {
+        const romanToValue = {
+          I: 1,
+          V: 5,
+          X: 10,
+          L: 50,
+          C: 100,
+          D: 500,
+          M: 1000,
+        };
+
+        let total = 0;
+        let prevValue = 0;
+
+        for (let char of roman) {
+          const value = romanToValue[char];
+          if (!value) throw new Error("Érvénytelen római szám!");
+
+          if (value > prevValue) {
+            total += value - 2 * prevValue;
+          } else {
+            total += value;
+          }
+          prevValue = value;
+        }
+
+        if (total < 1 || total > 3999) {
+          throw new Error("A római szám értéke 1 és 3999 között kell legyen!");
+        }
+        return total;
+      }
+    </script>
+  </body>
+</html>

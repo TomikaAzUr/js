@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bejelentkezés & Regisztráció</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        .box h2 {
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .users-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            text-align: center;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box" id="login-box">
+            <h2>Bejelentkezés</h2>
+            <div class="input-group">
+                <label for="login-username">Felhasználónév</label>
+                <input type="text" id="login-username" placeholder="Felhasználónév">
+            </div>
+            <div class="input-group">
+                <label for="login-password">Jelszó</label>
+                <input type="password" id="login-password" placeholder="Jelszó">
+            </div>
+            <button class="btn" onclick="login()">Bejelentkezés</button>
+        </div>
+        
+        <div class="box" id="register-box">
+            <h2>Regisztráció</h2>
+            <div class="input-group">
+                <label for="register-username">Felhasználónév</label>
+                <input type="text" id="register-username" placeholder="Felhasználónév">
+            </div>
+            <div class="input-group">
+                <label for="register-password">Jelszó</label>
+                <input type="password" id="register-password" placeholder="Jelszó">
+            </div>
+            <button class="btn" onclick="register()">Regisztráció</button>
+        </div>
+
+        <div class="box" id="logged-in-box" style="display: none;">
+            <h2>Bejelentkezve</h2>
+            <p id="logged-in-user"></p>
+            <button class="btn" onclick="logout()">Kijelentkezés</button>
+        </div>
+        
+        <div class="users-box">
+            <h2>Felhasználók</h2>
+            <ul id="users-list"></ul>
+        </div>
+    </div>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+            clearInputs("login-username", "login-password", "register-username", "register-password");
+            updateUsersList();
+            checkLoggedIn();
+        });
+
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const storedUsers = JSON.parse(sessionStorage.getItem("users")) || [];
+            
+            const user = storedUsers.find(user => user.username === username && user.password === password);
+            
+            if (user) {
+                sessionStorage.setItem("username", username);
+                alert("Sikeres bejelentkezés!");
+                clearInputs("login-username", "login-password");
+                checkLoggedIn();
+            } else {
+                alert("Hibás felhasználónév vagy jelszó!");
+            }
+        }
+
+        function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            
+            if (username && password) {
+                let users = JSON.parse(sessionStorage.getItem("users")) || [];
+                if (users.some(user => user.username === username)) {
+                    alert("Ez a felhasználónév már foglalt!");
+                    return;
+                }
+                users.push({ username, password });
+                sessionStorage.setItem("users", JSON.stringify(users));
+                alert("Sikeres regisztráció! Most már bejelentkezhetsz.");
+                clearInputs("register-username", "register-password");
+                updateUsersList();
+            } else {
+                alert("Minden mezőt ki kell tölteni!");
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem("username");
+            deleteCookie("session")
+            alert("Sikeres kijelentkezés!");
+            checkLoggedIn();
+        }
+
+        function checkLoggedIn() {
+            const loggedInBox = document.getElementById("logged-in-box");
+            const loginBox = document.getElementById("login-box");
+            const registerBox = document.getElementById("register-box");
+            const loggedInUser = document.getElementById("logged-in-user");
+
+            const username = sessionStorage.getItem("username");
+
+            if (username) {
+                loggedInUser.textContent = `Bejelentkezve: ${username}`;
+                loggedInBox.style.display = "block";
+                loginBox.style.display = "none";
+                registerBox.style.display = "none";
+                document.cookie = `username=${username}; expires=Tue, 25 Mar 2025 12:06:00 CET; path=/`;
+            } else {
+                loggedInBox.style.display = "none";
+                loginBox.style.display = "block";
+                registerBox.style.display = "block";
+            }
+        }
+
+        function setCookie(cname, cvalue, minutes) {
+        const d = new Date();
+        d.setTime(d.getTime() + (minutes*60*1000));
+        let expires = "expires="+ d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+        function getCookie(cname) {
+            const cookies = document.cookie.split('; ')
+            for (let i = 0; i < cookies.length; i++) {
+                let [key, value] = cookies[i].split('=');
+                if (key === name) return value;
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
+
+        function clearInputs(...ids) {
+        ids.forEach(id => document.getElementById(id).value = "");
+        }
+
+        function updateUsersList() {
+            const usersList = document.getElementById("users-list");
+            usersList.innerHTML = "";
+            const users = JSON.parse(sessionStorage.getItem("users")) || [];
+            users.forEach(user => {
+                const li = document.createElement("li");
+                li.textContent = user.username;
+                usersList.appendChild(li);
+            });
+            checkLoggedIn();
+        }
+    </script>
+</body>
+</html>

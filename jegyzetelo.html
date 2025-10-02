@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Egyszerű Jegyzetelő</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 500px;
+        margin: auto;
+        padding: 20px;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+      }
+      select,
+      button {
+        margin-top: 10px;
+      }
+      .note {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f4f4f4;
+        padding: 10px;
+        margin: 5px 0;
+      }
+      #save {
+        padding: 10px 20px;
+        font-size: 1em;
+        color: #fff;
+        background-color: green;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #save:hover{
+        background-color: rgb(131, 204, 20);
+      }
+
+      #save:active{
+        background-color: greenyellow;
+      }
+
+      #delete {
+        padding: 10px 20px;
+        font-size: 1em;
+        color: #fff;
+        background-color: red;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #delete:hover {
+        background-color: rgb(218, 35, 35);
+      }
+
+      #delete:active {
+        background-color: rgb(189, 34, 34);
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Jegyzetelő</h2>
+    <textarea id="noteInput" placeholder="Írd be a jegyzeted..."></textarea>
+    <select id="category">
+      <option value="Általános">Általános</option>
+      <option value="Munka">Munka</option>
+      <option value="Személyes">Személyes</option>
+    </select>
+    <button onclick="saveNote()" id="save">Mentés</button>
+    <h3>Mentett jegyzetek:</h3>
+    <div id="notesContainer"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", loadNotes);
+
+      function saveNote() {
+        const noteInput = document.getElementById("noteInput");
+        const category = document.getElementById("category").value;
+        const notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+        if (noteInput.value.trim() !== "") {
+          notes.push({ text: noteInput.value, category });
+          localStorage.setItem("notes", JSON.stringify(notes));
+          noteInput.value = "";
+          loadNotes();
+        }
+      }
+
+      function loadNotes() {
+        const notesContainer = document.getElementById("notesContainer");
+        notesContainer.innerHTML = "";
+        const notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+        notes.forEach((note, index) => {
+          const noteElement = document.createElement("div");
+          noteElement.classList.add("note");
+          noteElement.innerHTML = `
+                    <span><strong>${note.category}:</strong> ${note.text}</span>
+                    <button onclick="deleteNote(${index})" id="delete">Törlés</button>
+                `;
+          notesContainer.appendChild(noteElement);
+        });
+      }
+
+      function deleteNote(index) {
+        let notes = JSON.parse(localStorage.getItem("notes")) || [];
+        notes.splice(index, 1);
+        localStorage.setItem("notes", JSON.stringify(notes));
+        loadNotes();
+      }
+    </script>
+  </body>
+</html>

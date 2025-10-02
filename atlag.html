@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Átlagszámítás</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .grade {
+        width: 50px;
+        margin-right: 10px;
+      }
+      .addGrade, .deleteRow {
+        padding: 5px 10px;
+        font-size: 14px;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+
+      .deleteRow{
+        color:red;
+      }
+      
+      #addSubject, #calculateAverage {
+        display: inline-block;
+        margin: 20px 10px 10px 0;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      td div {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Átlagszámítás</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Tantárgy</th>
+          <th>Jegyek</th>
+          <th>Tantárgyi Átlag</th>
+          <th>Törlés</th>
+        </tr>
+      </thead>
+      <tbody id="gradesTable"></tbody>
+    </table>
+    <button id="addSubject">Tantárgy hozzáadása</button>
+    <button id="calculateAverage">Összátlag számítása</button>
+    <p id="result"></p>
+
+    <script>
+      function calculateSubjectAverage(row) {
+        const grades = row.querySelectorAll(".grade");
+        let sum = 0;
+        let count = 0;
+
+        grades.forEach((gradeInput) => {
+          const grade = parseInt(gradeInput.value);
+          if (!isNaN(grade) && grade >= 1 && grade <= 5) {
+            sum += grade;
+            count++;
+          } else {
+            gradeInput.value = "";
+          }
+        });
+
+        const average = count > 0 ? (sum / count).toFixed(2) : "";
+        row.querySelector(".subjectAverage").textContent = average;
+      }
+
+      document.getElementById("addSubject").addEventListener("click", function () {
+        const table = document.getElementById("gradesTable");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="text" placeholder="Tantárgy"></td>
+          <td>
+            <div>
+              <input type="number" class="grade" placeholder="Jegy" min="1" max="5">
+              <button class="addGrade">+</button>
+            </div>
+          </td>
+          <td class="subjectAverage"></td>
+          <td><button class="deleteRow">X</button></td>
+        `;
+        table.appendChild(row);
+      });
+
+      document.getElementById("gradesTable").addEventListener("click", function (event) {
+        if (event.target.classList.contains("addGrade")) {
+          const gradeInput = document.createElement("input");
+          gradeInput.type = "number";
+          gradeInput.className = "grade";
+          gradeInput.placeholder = "Jegy";
+          gradeInput.min = "1";
+          gradeInput.max = "5";
+          event.target.parentElement.insertBefore(gradeInput, event.target);
+          calculateSubjectAverage(event.target.closest("tr"));
+        }
+        
+        if (event.target.classList.contains("deleteRow")) {
+          event.target.closest("tr").remove();
+        }
+      });
+
+      document.getElementById("gradesTable").addEventListener("input", function (event) {
+        if (event.target.classList.contains("grade")) {
+          calculateSubjectAverage(event.target.closest("tr"));
+        }
+      });
+
+      document.getElementById("calculateAverage").addEventListener("click", function () {
+        const rows = document.querySelectorAll("#gradesTable tr");
+        let totalSum = 0;
+        let totalCount = 0;
+
+        rows.forEach((row) => {
+          const avgText = row.querySelector(".subjectAverage").textContent;
+          const avg = parseFloat(avgText);
+          if (!isNaN(avg)) {
+            totalSum += avg;
+            totalCount++;
+          }
+        });
+
+        const overallAverage = totalCount > 0 ? (totalSum / totalCount).toFixed(2) : "0";
+        document.getElementById("result").textContent = `Az összátlag: ${overallAverage}`;
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>November 5</title>
+</head>
+<body>
+    <!-- Ez a body. -->
+    <input id="elso" value="november">
+    <button id="gomb">Print</button>
+    <br>
+    <select id="lista">
+        <option value="elso">Első</option>
+        <option value="elso">Második</option>
+    </select>
+    <div id="tartalom"></div>
+    <script>
+        // document.write("Hello World!");
+        // document.write(document.title);
+        const elso = document.getElementById("elso");
+        const gomb = document.getElementById("gomb");
+        const tartalom = document.getElementById("tartalom");
+        const lista = document.getElementById("lista");
+
+        gomb.addEventListener("click", () => {
+            tartalom.innerHTML=`Gombnyomás történt: ${elso.value}`
+
+            if (lista.value == "elso"){
+                alert("Az első lett kiválasztva.")
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+</head>
+<body>
+    <input type="number" id="elso">
+    <select id="lista">
+        <option value="+">+</option>
+        <option value="-">-</option>
+        <option value="*">*</option>
+        <option value="/">/</option>
+    </select>
+
+    <input type="number" id="masodik">
+
+    <button type="submit" id="kuldes">küldés</button>
+    <script>
+
+    const elso = document.getElementById("elso");
+    const masodik = document.getElementById("masodik");
+
+        
+    gomb.addEventListener("click", () => {
+        console.log(`A megoldás ${elso.value} ${lista.value} ${masodik.value}`)
+    });
+    </script>
+</body>
+</html>

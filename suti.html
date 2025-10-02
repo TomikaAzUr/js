@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teendők és Profil</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .hidden { display: none; }
+    .completed { background-color: #e6ffed; }
+  </style>
+</head>
+<body class="container py-4">
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0">Teendő App</h2>
+    <button id="logoutBtn" class="btn btn-outline-danger btn-sm">Kijelentkezés</button>
+  </header>
+
+  <!-- Bejelentkezés -->
+  <section id="loginDiv">
+    <h4>Bejelentkezés</h4>
+    <div class="mb-2">
+      <input type="text" id="username" class="form-control" placeholder="Add meg a neved" />
+    </div>
+    <button class="btn btn-primary" onclick="login()">Belépés</button>
+  </section>
+
+  <!-- Profil -->
+  <section id="profileDiv" class="hidden">
+    <h4>Profilod</h4>
+    <div class="mb-2">
+      <input type="text" id="fullName" class="form-control" placeholder="Teljes név" />
+    </div>
+    <div class="mb-2">
+      <input type="email" id="email" class="form-control" placeholder="E-mail" />
+    </div>
+    <div class="mb-3">
+      <input type="text" id="color" class="form-control" placeholder="Kedvenc szín" />
+    </div>
+    <button class="btn btn-success" onclick="saveProfile()">Mentés és tovább</button>
+  </section>
+
+  <!-- Teendők -->
+  <section id="taskDiv" class="hidden">
+    <h4>Teendőid</h4>
+    <div class="mb-2">
+      <input type="text" id="taskTitle" class="form-control" placeholder="Feladat címe" />
+    </div>
+    <div class="mb-2">
+      <textarea id="taskDesc" class="form-control" placeholder="Leírás"></textarea>
+    </div>
+    <div class="mb-2">
+      <input type="date" id="taskDue" class="form-control" />
+    </div>
+    <button class="btn btn-outline-primary mb-3" onclick="addTask()">Hozzáadás</button>
+    <div id="taskList" class="row g-3"></div>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const user = sessionStorage.getItem("username");
+      user ? (show("profileDiv"), fillProfile()) : show("loginDiv");
+    });
+
+    const show = (id) => {
+      ["loginDiv", "profileDiv", "taskDiv"].forEach(d => document.getElementById(d).classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+    };
+
+    const login = () => {
+      const name = document.getElementById("username").value.trim();
+      if (!name) return;
+      sessionStorage.setItem("username", name);
+      show("profileDiv");
+      fillProfile();
+    };
+
+    const saveProfile = () => {
+      document.cookie = `fullName=${fullName.value}; max-age=86400`;
+      document.cookie = `email=${email.value}; max-age=86400`;
+      document.cookie = `color=${color.value}; max-age=86400`;
+      show("taskDiv");
+      renderTasks();
+    };
+
+    const fillProfile = () => {
+      fullName.value = getCookie("fullName") || "";
+      email.value = getCookie("email") || "";
+      color.value = getCookie("color") || "";
+    };
+
+    const getCookie = (key) => {
+      return document.cookie
+        .split('; ')
+        .find(row => row.startsWith(key + '='))?.split('=')[1];
+    };
+
+    const addTask = () => {
+      const user = sessionStorage.getItem("username");
+      const tasks = JSON.parse(localStorage.getItem(user)) || [];
+      tasks.push({
+        title: taskTitle.value,
+        desc: taskDesc.value,
+        due: taskDue.value,
+        done: false
+      });
+      localStorage.setItem(user, JSON.stringify(tasks));
+      taskTitle.value = "";
+      taskDesc.value = "";
+      taskDue.value = "";
+      renderTasks();
+    };
+
+    const renderTasks = () => {
+      const user = sessionStorage.getItem("username");
+      const taskList = document.getElementById("taskList");
+      taskList.innerHTML = "";
+      const tasks = JSON.parse(localStorage.getItem(user)) || [];
+
+      tasks.forEach((task, idx) => {
+        const col = document.createElement("div");
+        col.className = "col-md-6";
+        col.innerHTML = `
+          <div class="card p-3 ${task.done ? 'completed' : ''}">
+            <h5 class="mb-1">${task.title}</h5>
+            <p class="mb-1">${task.desc}</p>
+            <small class="text-muted mb-2">Határidő: ${task.due}</small><br />
+            <button class="btn btn-sm btn-outline-success me-2" onclick="markDone(${idx})">Kész</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${idx})">Törlés</button>
+          </div>`;
+        taskList.appendChild(col);
+      });
+    };
+
+    const markDone = (i) => {
+      const user = sessionStorage.getItem("username");
+      const tasks = JSON.parse(localStorage.getItem(user));
+      tasks[i].done = true;
+      localStorage.setItem(user, JSON.stringify(tasks));
+      renderTasks();
+    };
+
+    const deleteTask = (i) => {
+      const user = sessionStorage.getItem("username");
+      const tasks = JSON.parse(localStorage.getItem(user));
+      tasks.splice(i, 1);
+      localStorage.setItem(user, JSON.stringify(tasks));
+      renderTasks();
+    };
+
+    logoutBtn.onclick = () => {
+      sessionStorage.clear();
+      show("loginDiv");
+    };
+  </script>
+</body>
+</html>
